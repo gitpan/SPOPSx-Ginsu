@@ -5,7 +5,7 @@ sub write_makefile {
 	# the contents of the Makefile that is written.
 	WriteMakefile(
 		'NAME'			=> 'SPOPSx-Ginsu',
-		'PREREQ_PM'		=> { SPOPS => 0.83 },
+		'PREREQ_PM'		=> { SPOPS => 0.86 },
 		'AUTHOR'		=> 'Ray Zimmerman <rz10@cornell.edu>',
 		'ABSTRACT'		=> 'SPOPS eXtension for Generalized INheritance SUpport',
 		'PMLIBDIRS'		=> [ 'SPOPSx' ],

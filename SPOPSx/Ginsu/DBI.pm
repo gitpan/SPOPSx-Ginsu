@@ -3,10 +3,10 @@ package SPOPSx::Ginsu::DBI;
 use strict;
 use vars qw($VERSION $DSN $USER $PASS);
 
-$VERSION = sprintf "%d.%03d", q$Revision: 1.17 $ =~ /: (\d+)\.(\d+)/;
+$VERSION = sprintf "%d.%03d", q$Revision: 1.18 $ =~ /: (\d+)\.(\d+)/;
 
 use base qw( SPOPS::DBI::MySQL SPOPS::DBI );
-use SPOPS 0.83;
+use SPOPS 0.86;
 use SPOPS::DBI;
 use SPOPS::DBI::MySQL;
 
@@ -188,6 +188,9 @@ SPOPS::Import::DBI::TableTransform.
 =over 4
 
 $Log: DBI.pm,v $
+Revision 1.18  2004/06/02 15:05:42  ray
+Now requires SPOPS-0.86
+
 Revision 1.17  2004/04/23 18:05:30  ray
 Updated docs.
 

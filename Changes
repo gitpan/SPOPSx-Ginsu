@@ -1,5 +1,10 @@
 Revision history for SPOPSx-Ginsu.
 
+0.58  Wed, Jun 2, 2004
+	- updated to sync with SPOPS-0.87
+	- removed _execute_multiple_record_query() since tables names bug
+	  was fixed in SPOPS-0.86
+
 0.57  Fri, Apr 23, 2004 (first CPAN release)
 	- renamed to SPOPSx::Ginsu
 	- updated to sync with SPOPS-0.83

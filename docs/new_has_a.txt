@@ -56,7 +56,8 @@ Assuming ...
     X has-a A, and
     X has-a B (that is, X links A to B)
 
-We want to allow the 'has_a' configuration for 'X has-a A' to define the following options for ...
+We want to allow the 'has_a' configuration for 'X has-a A' to define the
+following options for ...
 
 ... fetch behavior:
     (1) all manual fetches & saves (default)
@@ -144,18 +145,31 @@ $CONF = {
  Overview
 ==========
 
-For the sake of clarity in the discussion, assume that X has-a A and X has-a B, namely fields myA and myB, respectively, and we're examining the meaning of the has_a data corresponding to the myA field.
+For the sake of clarity in the discussion, assume that X has-a A and X
+has-a B, namely fields myA and myB, respectively, and we're examining
+the meaning of the has_a data corresponding to the myA field.
 
-The new 'has_a' config data is a hashref where the keys are the names of fields in the table containing IDs of other objects (foreign keys). These can be names of fields in inherited classes with certain restrictions. Each value in the hash is another hashref with the following possible keys ...
+The new 'has_a' config data is a hashref where the keys are the names of
+fields in the table containing IDs of other objects (foreign keys).
+These can be names of fields in inherited classes with certain
+restrictions. Each value in the hash is another hashref with the
+following possible keys ...
 
     class
     fetch
     link
     remove
 
-The value for 'class' is the name of the class of objects being linked by this field. If this field is defined in a parent class (as opposed to the current class) then the class specified here must be a sub-class of the one specified in the has_a config of the parent class. (E.g. if a Team has-a Coach, it's fine to override the has_a specification for the coach field in Team to say that SoccerTeam has-a SoccerCoach, but not that SoccerTeam has-a TeamCaptain.)
+The value for 'class' is the name of the class of objects being linked
+by this field. If this field is defined in a parent class (as opposed to
+the current class) then the class specified here must be a sub-class of
+the one specified in the has_a config of the parent class. (E.g. if a
+Team has-a Coach, it's fine to override the has_a specification for the
+coach field in Team to say that SoccerTeam has-a SoccerCoach, but not
+that SoccerTeam has-a TeamCaptain.)
 
-The values for 'fetch', 'remove' and 'link' are each hashrefs, with possible keys as follows:
+The values for 'fetch', 'remove' and 'link' are each hashrefs, with
+possible keys as follows:
 
     fetch       remove      link
     -----       ------      ----
@@ -164,28 +178,66 @@ The values for 'fetch', 'remove' and 'link' are each hashrefs, with possible key
     list_field  list_field  list_field
                             field
 
-The 'fetch' parameters specify what methods will be automatically created for fetching one object from the other (methods in X to fetch the A or in A to fetch the X's) and when they are called.
+The 'fetch' parameters specify what methods will be automatically
+created for fetching one object from the other (methods in X to fetch
+the A or in A to fetch the X's) and when they are called.
 
-The 'remove' parameters specify what methods will be automatically created for removing one object from the other (methods in X to remove the A or in A to remove the X's) and when they are called.
+The 'remove' parameters specify what methods will be automatically
+created for removing one object from the other (methods in X to remove
+the A or in A to remove the X's) and when they are called.
 
-If the 'link' key is present it means that this class (X) serves to link two other objects together via this field (myA) and another has-a field (myB). The 'link' parameters specify what methods will be automatically created in the foreign object (A) for adding and removing links (instances of X) to the other object (B) and for accessing the linked objects, and when these methods are called.
+If the 'link' key is present it means that this class (X) serves to link
+two other objects together via this field (myA) and another has-a field
+(myB). The 'link' parameters specify what methods will be automatically
+created in the foreign object (A) for adding and removing links
+(instances of X) to the other object (B) and for accessing the linked
+objects, and when these methods are called.
 
 
 =======
  Fetch
 =======
 
-The fetch specification allows for 3 types of fetch operations for the has-a relationship in question, manual, automatic and lazy, either in the forward direction (given an X, fetch its A) or in the reverse direction (given an A, fetch its list of X's). The types 'manual', 'auto' and 'lazy' indicate a forward direction and 'manual_by', 'auto_by' and 'lazy_by' indicate a reverse direction (that the corresponding X's will be fetched BY an A). In the case of the forward direction, we'll call X the primary object and A the secondary object. For the reverse direction, A will be primary and X secondary. Using that terminology, manual means that secondary object are only fetched in response to an explicit request to fetch them. Auto means they are fetched automatically when the primary object is fetched (and they are stashed in the primary object), and lazy means they are fetched (and stashed) by the primary object only at the moment an access to the secondary object is attempted.
+The fetch specification allows for 3 types of fetch operations for the
+has-a relationship in question, manual, automatic and lazy, either in
+the forward direction (given an X, fetch its A) or in the reverse
+direction (given an A, fetch its list of X's). The types 'manual',
+'auto' and 'lazy' indicate a forward direction and 'manual_by',
+'auto_by' and 'lazy_by' indicate a reverse direction (that the
+corresponding X's will be fetched BY an A). In the case of the forward
+direction, we'll call X the primary object and A the secondary object.
+For the reverse direction, A will be primary and X secondary. Using that
+terminology, manual means that secondary object are only fetched in
+response to an explicit request to fetch them. Auto means they are
+fetched automatically when the primary object is fetched (and they are
+stashed in the primary object), and lazy means they are fetched (and
+stashed) by the primary object only at the moment an access to the
+secondary object is attempted.
 
-The methods that are created are always created in the primary object for fetching the secondary object(s).
+The methods that are created are always created in the primary object
+for fetching the secondary object(s).
 
-The forward direction specifies that a method be created in X for fetching the corresponding A. If the 'name' parameter is present, it gives the name of the method to create. If it is not present, it will use the default name 'fetch_<field_name>' (in this example 'fetch_myA'). This method accepts only a hashref of parameters (db handle, etc) as input args and returns the secondary object.
+The forward direction specifies that a method be created in X for
+fetching the corresponding A. If the 'name' parameter is present, it
+gives the name of the method to create. If it is not present, it will
+use the default name 'fetch_<field_name>' (in this example 'fetch_myA').
+This method accepts only a hashref of parameters (db handle, etc) as
+input args and returns the secondary object.
 
-The reverse direction specifies that a method be created in A for fetching the list of corresponding X's. If the 'name' parameter is present, it gives the name of the method to create, otherwise it will use the default name 'fetch_<list_field>' (in this example 'fetch_list_of_Xs'). This method accepts only a hashref of parameters (db handle, etc) as input args and returns an arrayref of the secondary objects.
+The reverse direction specifies that a method be created in A for
+fetching the list of corresponding X's. If the 'name' parameter is
+present, it gives the name of the method to create, otherwise it will
+use the default name 'fetch_<list_field>' (in this example
+'fetch_list_of_Xs'). This method accepts only a hashref of parameters
+(db handle, etc) as input args and returns an arrayref of the secondary
+objects.
 
-The 'list_field' parameter, which is mandatory for reverse direction, must match a list_field defined for this class in the primary object's configuration (i.e. the list_field specification in class A's config).
+The 'list_field' parameter, which is mandatory for reverse direction,
+must match a list_field defined for this class in the primary object's
+configuration (i.e. the list_field specification in class A's config).
 
-If the fetch type is set to 'auto', assuming default naming of methods, then doing ...
+If the fetch type is set to 'auto', assuming default naming of methods,
+then doing ...
 
     $x = X->fetch($x_id);
 
@@ -193,9 +245,16 @@ If the fetch type is set to 'auto', assuming default naming of methods, then doi
 
     $x->{myA} = $x->fetch_myA;
 
-... during the post_fetch stage. If the fetch type is set to 'lazy', the second operation happens whenever $x->{myA} is accessed the first time. In all forward direction fetch configurations (manual, auto and lazy), if $x->{myA} contains a reference to an A object when $x is saved, it will save the A object during the pre_save stage before saving $x with the updated id of the A object. If $x->{myA} contains an id only, nothing special is done when $x is saved.
+... during the post_fetch stage. If the fetch type is set to 'lazy', the
+second operation happens whenever $x->{myA} is accessed the first time.
+In all forward direction fetch configurations (manual, auto and lazy),
+if $x->{myA} contains a reference to an A object when $x is saved, it
+will save the A object during the pre_save stage before saving $x with
+the updated id of the A object. If $x->{myA} contains an id only,
+nothing special is done when $x is saved.
 
-If the fetch type is set to 'auto_by', assuming default method naming, then doing ...
+If the fetch type is set to 'auto_by', assuming default method naming,
+then doing ...
 
     $a = A->fetch($a_id);
 
@@ -203,18 +262,50 @@ If the fetch type is set to 'auto_by', assuming default method naming, then doin
 
     $a->{'list_of_Xs'} = $a->fetch_list_of_Xs;
 
-... during the post_fetch stage. If the fetch type is set to 'lazy_by', the second operation happens whenever $a->{'list_of_Xs'} is accessed the first time. In all reverse direction fetch configurations (manual_by, auto_by and lazy_by), if $a->{'list_of_Xs'} contains an arrayref of X objects when $a is saved, it will save each X during the post_save stage after updating the myA field in each X with the new id of $a.
+... during the post_fetch stage. If the fetch type is set to 'lazy_by',
+the second operation happens whenever $a->{'list_of_Xs'} is accessed the
+first time. In all reverse direction fetch configurations (manual_by,
+auto_by and lazy_by), if $a->{'list_of_Xs'} contains an arrayref of X
+objects when $a is saved, it will save each X during the post_save stage
+after updating the myA field in each X with the new id of $a.
 
-For auto_by and lazy_by, two additional methods are created in A, one for adding objects to its list of X's and one for removing objects from it. These can only be used after the A object has been saved. Their primary purpose is to keep the list in memory in sync with what's in the database, so when using auto_by or lazy_by it's a good idea to use only these methods to add or remove corresponding X's. If the 'name' parameter is present, the methods are named add_<name> and remove_<name>. If the 'name' parameter is not present they are named add_to_<list_field> and remove_from_<list_field>. The method to add X's takes an X object or an arrayref of X objects as inputs and returns the same object or arrayref to the objects after saving them. The method to remove X's takes an id or arrayref of ids and returns the number of X's successfuly removed.
+For auto_by and lazy_by, two additional methods are created in A, one
+for adding objects to its list of X's and one for removing objects from
+it. These can only be used after the A object has been saved. Their
+primary purpose is to keep the list in memory in sync with what's in the
+database, so when using auto_by or lazy_by it's a good idea to use only
+these methods to add or remove corresponding X's. If the 'name'
+parameter is present, the methods are named add_<name> and
+remove_<name>. If the 'name' parameter is not present they are named
+add_to_<list_field> and remove_from_<list_field>. The method to add X's
+takes an X object or an arrayref of X objects as inputs and returns the
+same object or arrayref to the objects after saving them. The method to
+remove X's takes an id or arrayref of ids and returns the number of X's
+successfuly removed.
 
 
 ========
  Remove
 ========
 
-The remove specification allows for 6 types of remove operations for the has-a relationship in question, 'manual', 'auto', 'manual_by', 'auto_by', 'manual_null' and 'auto_null'. The types 'manual' and 'auto' specify a forward direction (given an X, remove its A) and 'manual_by' and 'auto_by' specify a reverse direction (given an A, remove it's list of X's). The types 'manual_null' and 'auto_null' also specify a reverse direction, but instead of removing the list of X's corresponding to a given A, they set the linking field (myA, in the example) to NULL in each of the X's.
+The remove specification allows for 6 types of remove operations for the
+has-a relationship in question, 'manual', 'auto', 'manual_by',
+'auto_by', 'manual_null' and 'auto_null'. The types 'manual' and 'auto'
+specify a forward direction (given an X, remove its A) and 'manual_by'
+and 'auto_by' specify a reverse direction (given an A, remove it's list
+of X's). The types 'manual_null' and 'auto_null' also specify a reverse
+direction, but instead of removing the list of X's corresponding to a
+given A, they set the linking field (myA, in the example) to NULL in
+each of the X's.
 
-For the forward direction ('manual' and 'auto'), a method is created in X to remove the corresponding A. If the 'name' parameter is present, it gives the name of the method to create. If it is not present, it will use the default name remove_<field_name> (in this example 'remove_myA'). This method accepts only a hashref of parameters (db handle, etc) as input args and returns a true value if the remove was successful. If the type is 'auto', this method will be called automatically in the pre-remove phase whenever X is removed. That is ...
+For the forward direction ('manual' and 'auto'), a method is created in
+X to remove the corresponding A. If the 'name' parameter is present, it
+gives the name of the method to create. If it is not present, it will
+use the default name remove_<field_name> (in this example 'remove_myA').
+This method accepts only a hashref of parameters (db handle, etc) as
+input args and returns a true value if the remove was successful. If the
+type is 'auto', this method will be called automatically in the
+pre-remove phase whenever X is removed. That is ...
 
     $x->remove;
 
@@ -224,11 +315,20 @@ For the forward direction ('manual' and 'auto'), a method is created in X to rem
 
 ... during the pre_remove stage.
 
-The reverse direction ('manual_by' and 'auto_by') specifies that a method be created in A for removing the corresponding X's. If the 'name' parameter is present, it gives the name of the method to create, otherwise it will use the default name 'remove_<list_field>' (in this example 'remove_list_of_Xs'). This method accepts only a hashref of parameters (db handle, etc) as input args and returns the number of objects removed.
+The reverse direction ('manual_by' and 'auto_by') specifies that a
+method be created in A for removing the corresponding X's. If the 'name'
+parameter is present, it gives the name of the method to create,
+otherwise it will use the default name 'remove_<list_field>' (in this
+example 'remove_list_of_Xs'). This method accepts only a hashref of
+parameters (db handle, etc) as input args and returns the number of
+objects removed.
 
-The 'list_field' parameter, which is mandatory for reverse direction, must match a list_field defined for this class in the primary object's configuration (i.e. the list_field specification in class A's config).
+The 'list_field' parameter, which is mandatory for reverse direction,
+must match a list_field defined for this class in the primary object's
+configuration (i.e. the list_field specification in class A's config).
 
-If the remove type is set to 'auto_by', assuming default method naming, then doing ...
+If the remove type is set to 'auto_by', assuming default method naming,
+then doing ...
 
     $a->remove;
 
@@ -238,9 +338,14 @@ If the remove type is set to 'auto_by', assuming default method naming, then doi
 
 ... during the pre_remove stage.
 
-If the remove type is set to 'manual_null' or 'auto_null' a method is created in A for setting the field in each of the X's corresponding to that A to NULL. If the 'name' parameter is present, it gives the name of the method to create, otherwise it will use the default name 'null_<list_field>' (in this example 'null_list_of_Xs').
+If the remove type is set to 'manual_null' or 'auto_null' a method is
+created in A for setting the field in each of the X's corresponding to
+that A to NULL. If the 'name' parameter is present, it gives the name of
+the method to create, otherwise it will use the default name
+'null_<list_field>' (in this example 'null_list_of_Xs').
 
-If the remove type is 'auto_null', assuming default method naming, then doing ...
+If the remove type is 'auto_null', assuming default method naming, then
+doing ...
 
     $a->remove;
 
@@ -255,11 +360,27 @@ If the remove type is 'auto_null', assuming default method naming, then doing ..
  Link
 ======
 
-The link specification, is used to indicate that the class (X) is used to link two objects together via this field (myA) and another has-a field. The 'field' parameter specifies the name of the other has-a field (myB in this example). A method will be created in A to allow an object of type A to fetch all of the objects of type B which are linked to that A via the corresponding X's. If the 'name' parameter is present, it gives the name of the method to create, otherwise it will use the default name 'fetch_<list_field>' (in this example 'fetch_linked_Bs'). This method accepts only a hashref of parameters (db handle, etc) as input args and returns an arrayref of the linked objects.
+The link specification, is used to indicate that the class (X) is used
+to link two objects together via this field (myA) and another has-a
+field. The 'field' parameter specifies the name of the other has-a field
+(myB in this example). A method will be created in A to allow an object
+of type A to fetch all of the objects of type B which are linked to that
+A via the corresponding X's. If the 'name' parameter is present, it
+gives the name of the method to create, otherwise it will use the
+default name 'fetch_<list_field>' (in this example 'fetch_linked_Bs').
+This method accepts only a hashref of parameters (db handle, etc) as
+input args and returns an arrayref of the linked objects.
 
-There are two other methods which are defined which allow an A to easily create and remove links (objects of class X) to B's. If the 'name' parameter is present, they will be called 'add_link_<name>' and 'remove_link_<name>', otherwise the default names, 'add_link_<list_field>' and 'remove_link_<list_field>', are used. Both methods take an id or an arrayref of ids of B objects as inputs and return the number of links added or removed respectively.
+There are two other methods which are defined which allow an A to easily
+create and remove links (objects of class X) to B's. If the 'name'
+parameter is present, they will be called 'add_link_<name>' and
+'remove_link_<name>', otherwise the default names,
+'add_link_<list_field>' and 'remove_link_<list_field>', are used. Both
+methods take an id or an arrayref of ids of B objects as inputs and
+return the number of links added or removed respectively.
 
-If the link type is set to 'auto', assuming default method naming, then doing ...
+If the link type is set to 'auto', assuming default method naming, then
+doing ...
 
     $a = A->fetch($a_id);
 
@@ -267,20 +388,34 @@ If the link type is set to 'auto', assuming default method naming, then doing ..
 
     $a->{'linked_Bs'} = $a->fetch_linked_Bs;
 
-... during the post_fetch stage. If the link type is set to 'lazy', the second operation happens whenever $a->{'linked_Bs'} is accessed the first time.
+... during the post_fetch stage. If the link type is set to 'lazy', the
+second operation happens whenever $a->{'linked_Bs'} is accessed the
+first time.
 
-For all links (manual, auto and lazy), whether or not $a->{'linked_Bs'} contains anything when $a is saved, it will NOT automatically save any X's or B's.
+For all links (manual, auto and lazy), whether or not $a->{'linked_Bs'}
+contains anything when $a is saved, it will NOT automatically save any
+X's or B's.
 
 
 ============
  Misc Notes
 ============
 
-- If X links A and B, then when adding a link via $a->add_link_linked_Bs(), how would other fields in X (besides myA and myB) be specified?
+- If X links A and B, then when adding a link via
+$a->add_link_linked_Bs(), how would other fields in X (besides myA and
+myB) be specified?
 
-- Maybe the add_link_<link_field> and remove_link_<link_field> methods are unecessarily asking for trouble and we should only allow links (X objects) to be created and removed directly via methods in X (not via A). These methods were an attempt to duplicate the current SPOPS links_to functionality by making the linking table correspond to just another SPOPS object. This also allows for a bit more generality in that the linking table can also add other attributes to the linking table (e.g. an effective date on a club membership).
+- Maybe the add_link_<link_field> and remove_link_<link_field> methods
+are unecessarily asking for trouble and we should only allow links (X
+objects) to be created and removed directly via methods in X (not via
+A). These methods were an attempt to duplicate the current SPOPS
+links_to functionality by making the linking table correspond to just
+another SPOPS object. This also allows for a bit more generality in that
+the linking table can also add other attributes to the linking table
+(e.g. an effective date on a club membership).
 
-- We must avoid has_a cycles (e.g. Boat has_a anchor and Anchor has_a Boat, both set up to auto-remove/fetch the other).
+- We must avoid has_a cycles (e.g. Boat has_a anchor and Anchor has_a
+Boat, both set up to auto-remove/fetch the other).
 
 
 ==========

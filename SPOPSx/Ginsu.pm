@@ -4,8 +4,8 @@ use strict;
 use vars qw($VERSION $Revision);
 
 BEGIN {
-	$Revision = sprintf "%d.%03d", q$Revision: 1.59 $ =~ /: (\d+)\.(\d+)/;
-	$VERSION = '0.57';
+	$Revision = sprintf "%d.%03d", q$Revision: 1.60 $ =~ /: (\d+)\.(\d+)/;
+	$VERSION = '0.58';
 }
 
 use base qw( SPOPSx::Ginsu::DBI );
@@ -265,7 +265,8 @@ ROW:
 ##-----  END ADDITIONAL CODE  -----
         my $obj = $class->new({ skip_default_values => 1 });
         $obj->_fetch_assign_row( $p->{raw_fields}, $row, $p );
-        next ROW unless ( $obj );
+
+        next ROW unless ( $obj ); # How could this ever be true?
 
         # Check security on the row unless overridden by
         # 'skip_security'. If the security check fails that's ok, just
@@ -273,8 +274,11 @@ ROW:
 
         my $sec_level = SPOPS::Secure::SEC_LEVEL_WRITE;
         unless ( $p->{skip_security} ) {
-            $sec_level = eval { $obj->check_action_security({
-                                          required => SPOPS::Secure::SEC_LEVEL_READ }) };
+            $log->is_debug &&
+                $log->debug( "Checking security for [", ref( $obj ), ": ", $obj->id, "]" );
+            $sec_level = eval {
+                $obj->check_action_security({ required => SPOPS::Secure::SEC_LEVEL_READ })
+            };
             if ( $@ ) {
                 $log->is_info &&
                     $log->info( "Security check for object in ",
@@ -382,29 +386,6 @@ sub fetch_count {
 #     }
 ##-----  END REMOVE CODE  -----
     return $row_count;
-}
-
-## copied straight from SPOPS::DBI, with the modifications as noted
-sub _execute_multiple_record_query {
-    my ( $class, $p ) = @_;
-    $p->{from}   ||= [ $class->table_name ];
-##-----  REPLACE THIS ORIGINAL CODE  -----
-#   my %from = map { lc $_ => 1 } @{ $p->{from} };
-##-----  WITH THIS OVERRIDING CODE  -----
-    my %from = map { $_ => 1 } @{ $p->{from} };
-##-----  END OVERRIDING CODE  -----
-    unless ( $from{ $class->table_name } ) {
-        $from{ $class->table_name }++;
-    }
-    $p->{from}     = [ keys %from ];
-    $p->{select} ||= $class->_fetch_select_fields( $p );
-    $p->{return}   = 'sth';
-    $p->{db}     ||= $class->global_datasource_handle( $p->{connect_key} );
-
-    # We return a DBI statement handle here so we can scroll through the
-    # rows without assigning them all.
-
-    return $class->db_select( $p );
 }
 
 sub pm_fetch {
@@ -1283,6 +1264,9 @@ Strict fields functionality does not work.
 =over 4
 
 $Log: Ginsu.pm,v $
+Revision 1.60  2004/06/02 15:07:04  ray
+Synced with SPOPS-0.87, removed _execute_multiple_record_query(), updated version number.
+
 Revision 1.59  2004/04/23 18:05:31  ray
 Updated docs.
 
